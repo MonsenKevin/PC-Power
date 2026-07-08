@@ -1,0 +1,5 @@
+#define BLYNK_TEMPLATE_ID "[INSERT HERE]"
+#define BLYNK_TEMPLATE_NAME "[INSERT HERE]"
+#define BLYNK_AUTH_TOKEN "[INSERT HERE]"
+char ssid[] = "[INSERT HERE]"; 
+char pass[] = "[INSERT HERE]";
