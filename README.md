@@ -16,8 +16,8 @@ This project features a completely non-blocking network stack, physical button p
 
 ## Hardware Requirements
 
-* **ESP32 Development Board** (Standard ESP32-WROOM or similar)
-* **Female-to-Female DuPont Jumper Wires**
+* **ESP32 Development Board** (Standard ESP32-WROOM or similar). I used [this one](https://www.amazon.com/dp/B0D8T53CQ5?ref_=ppx_hzsearch_conn_dt_b_fed_asin_title_2).
+* **Female-to-Female DuPont Jumper Wires** I used [this one](https://www.amazon.com/dp/B01EV70C78?ref_=ppx_hzsearch_conn_dt_b_fed_asin_title_3).
 * A motherboard with an internal 9-pin USB 2.0 header
 
 > **Note:** Your motherboard BIOS must be configured to provide "Standby Power" (sometimes called ErP Ready = Disabled) to USB headers so the ESP32 stays on when the PC is off.
