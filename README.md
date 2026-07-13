@@ -108,10 +108,6 @@ Verify that the wires are connected to the correct polarity. The positive wire s
 ### My computer turns on but won't display anything on the screen
 If you repeated the previous wiring issue, the BIOS may stop booting. Clearing the CMOS battery (removing and reinserting it) resolved this issue for me
 
-## Why OUTPUT_OPEN_DRAIN?
-
-This project safely interfaces a 3.3V ESP32 with a 3.3V/5V motherboard header by setting the output pin to `OUTPUT_OPEN_DRAIN`. Instead of pushing voltage into the motherboard (which is dangerous), it simply pulls the motherboard's existing standby voltage down to ground, perfectly mimicking a physical mechanical switch.
-
 ## ⚠️ Disclaimer
 
 Working with internal computer hardware and live jumper wires carries a risk of short circuits. Always unplug your PC from the wall before wiring headers. Ensure you are sending 5V to the `VIN` pin and not directly to the 3.3V rail of the ESP32. Use this code and schematic at your own risk.
