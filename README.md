@@ -41,8 +41,45 @@ This project features a completely non-blocking network stack, physical button p
 
 ## Software Setup
 
-1. Open the code in the [Arduino IDE](https://www.arduino.cc/en/software).
-2. Install the **ESP32 Board Package** and the **Blynk** library via the Library Manager.
+### Step 1: Choose Your Program Version
+
+This project includes two firmware versions:
+
+#### **PC-Power-NoStatus.ino** (Simpler, Stateless)
+- **Best for:** Users who don't need to track PC power state in the cloud
+- **Features:** Supports V1 (short press) and V2 (force off) only
+- **Setup:** No V3 datastream required, no Windows Task Scheduler setup needed
+- **Downside:** The Blynk app cannot display whether the PC is currently on or off
+
+#### **PC-Power-Status.ino** (Full-Featured, Stateful)
+- **Best for:** Users who want to see the PC's power state in the Blynk app
+- **Features:** Supports V1, V2, and V3 (status tracking); automatically syncs PC state to the cloud
+- **Setup:** Requires creating V3 datastream in Blynk and loading the Windows Task Scheduler action
+- **Benefit:** The Blynk app displays the current power state and updates when the PC boots/shuts down
+
+### Step 2: Configure Blynk Datastreams
+
+1. Go to your Blynk project and navigate to the **Datastreams** tab
+2. Create the following virtual pins:
+
+   | Virtual Pin | Name | Type | Min | Max | Purpose |
+   |---|---|---|---|---|---|
+   | V1 | Power Toggle | Integer | 0 | 1 | Short press (boot/soft shutdown) |
+   | V2 | Force Off | Integer | 0 | 1 | Force shutdown (5-second hold) |
+   | V3* | PC Status | Integer | 0 | 1 | Tracks PC power state (0=Off, 1=On) |
+   
+   *Only needed for **PC-Power-Status.ino**
+
+3. For **PC-Power-Status.ino** only: After creating V3, set its initial value to match your PC's current state (0 if off, 1 if on)
+
+### Step 3: Install and Configure the Firmware
+
+1. Open the appropriate code in the [Arduino IDE](https://www.arduino.cc/en/software):
+   - `PC-Power-NoStatus.ino` (simple) or
+   - `PC-Power-Status.ino` (with status tracking)
+
+2. Install the **ESP32 Board Package** and the **Blynk** library via the Library Manager
+
 3. Rename `secrets_template.h` to `secrets.h` and fill in your credentials:
 
    ```cpp
@@ -51,17 +88,50 @@ This project features a completely non-blocking network stack, physical button p
    #define BLYNK_AUTH_TOKEN "YOUR_BLYNK_TOKEN"
    ```
 
-4. Flash the code to your ESP32.
+4. Flash the code to your ESP32
+
+### Step 4: (PC-Power-Status Only) Set Up Windows Task Scheduler
+
+If you are using **PC-Power-Status.ino**, you must install the provided Windows Task Scheduler action to automatically update V3 when the PC shuts down. The task calls a PowerShell script that notifies Blynk of the shutdown event.
+
+1. **Configure the PowerShell Script:**
+   - Open `Run Blynk Script on Shutdown.ps1` in a text editor
+   - Find the line with `YOUR_AUTH_TOKEN` placeholder
+   - Replace `YOUR_AUTH_TOKEN` with your actual Blynk Auth Token (same one you put in `secrets.h`)
+   - Save the file
+
+2. **Open Task Scheduler:**
+   - Press `Win + R`, type `taskschd.msc`, and press Enter
+
+3. **Import the Task:**
+   - In Task Scheduler, go to **Action** → **Import Task**
+   - Navigate to and select `Run Blynk Script on Shutdown.xml` from this project folder
+   - Click **Open**
+   - The imported task will appear in the Task Scheduler and is now ready to use
+
+4. **Verify the Task:**
+   - The task is configured to run at shutdown
+   - When your PC shuts down, the PowerShell script will execute and send a request to Blynk updating V3 to `0` (off)
+   - When you boot with V1, the firmware will automatically sync V3 back to `1` (on)
 
 ## Blynk & Apple Shortcuts Configuration
 
-This system listens to three Virtual Pins from the Blynk Cloud:
+### Supported Virtual Pins
 
-* **V1 (Short Press):** Simulates a 500ms press of the power button to turn the PC on or cleanly shut down Windows.
-* **V2 (Force Off):** Simulates a 5-second hold of the power button for a hard shutdown.
-* **V3 (Status Toggle):** Toggles the stored on/off state. Called automatically after V1 and V2 actions, or can be polled directly to read the current state.
+| Version | V1 | V2 | V3 |
+|---------|----|----|-----|
+| **PC-Power-NoStatus** | ✓ Short Press | ✓ Force Off | ✗ Not supported |
+| **PC-Power-Status** | ✓ Short Press | ✓ Force Off | ✓ Status Toggle |
 
-To trigger these via Apple Shortcuts, use the "Get Contents of URL" action with the following HTTP GET requests:
+### Virtual Pin Details
+
+* **V1 (Short Press):** Simulates a 500ms press of the power button to turn the PC on or cleanly shut down Windows. Works with both versions.
+* **V2 (Force Off):** Simulates a 5-second hold of the power button for a hard shutdown. Works with both versions.
+* **V3 (Status Toggle):** *(PC-Power-Status.ino only)* Toggles and tracks the on/off state. Automatically updated when the PC boots or shuts down via Task Scheduler.
+
+### Apple Shortcuts URLs
+
+To trigger actions via Apple Shortcuts, use the "Get Contents of URL" action with these HTTP GET requests:
 
 **Boot / Soft Shutdown (V1):**
 ```
@@ -73,10 +143,12 @@ https://blynk.cloud/external/api/update?token=YOUR_AUTH_TOKEN&v1=1
 https://blynk.cloud/external/api/update?token=YOUR_AUTH_TOKEN&v2=1
 ```
 
-**Check Status (V3):**
+**Check Status (V3 - PC-Power-Status only):**
 ```
 https://blynk.cloud/external/api/get?token=YOUR_AUTH_TOKEN&v3
 ```
+
+### Pre-Built Apple Shortcuts
 
 Below are the links to the shortcuts I use. You can simply add them to your device and update the tokens in the URL:
 
@@ -93,20 +165,25 @@ https://www.icloud.com/shortcuts/d29d41408ac94f65afb998d191ebd830
 https://www.icloud.com/shortcuts/6711baafc62f4caf9015371f4de45f0c
 ```
 
-**Check Status:**
+**Check Status (PC-Power-Status only):**
 ```
 https://www.icloud.com/shortcuts/46dbc0d17be64a94a4b15b8bdc532de0 
 ```
 
 ## Troubleshooting
-### The Get Status Command is backwards / says that the PC is already on despite it being off
-This happens sometimes when you update the firmware and the PC gets triggered on, then the software resets. To fix it, go to the Blynk cloud console, find the datastream page, and manually update V3 to the correct state (0 = Off, 1 = On)
 
-### The computer turns on momentarily then shuts off
-Verify that the wires are connected to the correct polarity. The positive wire should connect to the positive pin and the negative wire should connect to ground, forming a complete circuit. Incorrect polarity can cause unexpected behavior
+### The Status Display is Incorrect (PC-Power-Status only)
+If you update the firmware or experience a power cycle, V3 may become out of sync with your PC's actual state. To fix it:
+1. Go to the Blynk cloud console
+2. Find the **Datastreams** page
+3. Manually update V3 to the correct state (0 = Off, 1 = On)
+4. The Task Scheduler will keep it in sync going forward
 
-### My computer turns on but won't display anything on the screen
-If you repeated the previous wiring issue, the BIOS may stop booting. Clearing the CMOS battery (removing and reinserting it) resolved this issue for me
+### The Computer Turns On Momentarily Then Shuts Off
+Verify that the wires are connected to the correct polarity. The positive wire should connect to the positive pin and the negative wire should connect to ground, forming a complete circuit. Incorrect polarity can cause unexpected behavior.
+
+### My Computer Turns On But Won't Display Anything on the Screen
+If you repeated the previous wiring issue, the BIOS may stop booting. Clearing the CMOS battery (removing and reinserting it) resolved this issue for me.
 
 ## ⚠️ Disclaimer
 
