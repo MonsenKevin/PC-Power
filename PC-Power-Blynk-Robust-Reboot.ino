@@ -16,6 +16,7 @@ bool buttonState = LOW;
 
 // --- HELPER FUNCTION: PRESS THE BUTTON ---
 void triggerPower(int holdMs) {
+  Blynk.syncVirtual(V3);
   Serial.print("Triggering Power Pin for ");
   Serial.print(holdMs);
   Serial.println("ms");
@@ -32,7 +33,6 @@ void triggerPower(int holdMs) {
 BLYNK_WRITE(V1) {
   int pinValue = param.asInt(); 
   if (pinValue == 1) {
-    Blynk.syncVirtual(V3);
     Serial.println("Cloud Command Received: Short Press");
     triggerPower(500);
   }
@@ -43,7 +43,6 @@ BLYNK_WRITE(V1) {
 BLYNK_WRITE(V2) {
   int pinValue = param.asInt(); 
   if (pinValue == 1) {
-    Blynk.syncVirtual(V3);
     Serial.println("Cloud Command Received: FORCE OFF");
     triggerPower(5000);
   }
@@ -125,7 +124,6 @@ void loop() {
   if (buttonState == HIGH && lastButtonState == LOW) {
     Serial.println("Physical Button Pressed!");
     triggerPower(500); 
-    Blynk.syncVirtual(V3);
     delay(500); // Simple debounce to prevent double-clicks
   }
   
