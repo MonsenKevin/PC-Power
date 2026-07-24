@@ -59,8 +59,13 @@ This project includes two firmware versions:
 
 ### Step 2: Configure Blynk Datastreams
 
-1. Go to your Blynk project and navigate to the **Datastreams** tab
-2. Create the following virtual pins:
+1. Go to [Blynk](https://www.blynk.io) and make an account
+2. Click "New Device"
+3. Click "Start From Scratch"
+4. Click "New Template"
+5. Click "Data Streams", then "Create New"
+6. Click "Browse Presets" and chose "Power Switch"
+3. Create the following virtual pins:
 
    | Virtual Pin | Name | Type | Min | Max | Purpose |
    |---|---|---|---|---|---|
