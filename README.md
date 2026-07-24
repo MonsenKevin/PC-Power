@@ -17,7 +17,7 @@ This project features a completely non-blocking network stack, physical button p
 ## Hardware Requirements
 
 * **ESP32 Development Board** (Standard ESP32-WROOM or similar). I used [this one](https://www.amazon.com/dp/B0D8T53CQ5?ref_=ppx_hzsearch_conn_dt_b_fed_asin_title_2).
-* **Female-to-Female DuPont Jumper Wires** I used [this one](https://www.amazon.com/dp/B01EV70C78?ref_=ppx_hzsearch_conn_dt_b_fed_asin_title_3).
+* **Female-to-Female DuPont Jumper Wires** — I used [this one](https://www.amazon.com/dp/B01EV70C78?ref_=ppx_hzsearch_conn_dt_b_fed_asin_title_3).
 * A motherboard with an internal 9-pin USB 2.0 header
 
 > **Note:** Your motherboard BIOS must be configured to provide "Standby Power" (sometimes called ErP Ready = Disabled) to USB headers so the ESP32 stays on when the PC is off.
@@ -54,7 +54,7 @@ This project includes two firmware versions:
 #### **PC-Power-Status.ino** (Full-Featured, Stateful)
 - **Best for:** Users who want to see the PC's power state in the Blynk app
 - **Features:** Supports V1, V2, and V3 (status tracking); automatically syncs PC state to the cloud
-- **Setup:** Requires creating V3 datastream in Blynk and loading the Windows Task Scheduler action
+- **Setup:** Requires creating a V3 datastream in Blynk and installing the Windows Task Scheduler task that calls the included PowerShell script
 - **Benefit:** The Blynk app displays the current power state and updates when the PC boots/shuts down
 
 ### Step 2: Configure Blynk Datastreams
@@ -101,9 +101,11 @@ If you are using **PC-Power-Status.ino**, you must install the provided Windows 
 
 1. **Configure the PowerShell Script:**
    - Open `Run Blynk Script on Shutdown.ps1` in a text editor
-   - Find the line with `YOUR_AUTH_TOKEN` placeholder
+   - Find the line with the `YOUR_AUTH_TOKEN` placeholder
    - Replace `YOUR_AUTH_TOKEN` with your actual Blynk Auth Token (same one you put in `secrets.h`)
    - Save the file
+
+   Note: If your system blocks unsigned scripts, configure the Task action to run PowerShell with the `-ExecutionPolicy Bypass -File "C:\\path\\to\\Run Blynk Script on Shutdown.ps1"` arguments, or adjust your execution policy appropriately.
 
 2. **Open Task Scheduler:**
    - Press `Win + R`, type `taskschd.msc`, and press Enter
@@ -112,7 +114,7 @@ If you are using **PC-Power-Status.ino**, you must install the provided Windows 
    - In Task Scheduler, go to **Action** → **Import Task**
    - Navigate to and select `Run Blynk Script on Shutdown.xml` from this project folder
    - Click **Open**
-   - The imported task will appear in the Task Scheduler and is now ready to use
+   - The imported task will appear in Task Scheduler and is now ready to use
 
 4. **Verify the Task:**
    - The task is configured to run at shutdown
@@ -153,7 +155,7 @@ https://blynk.cloud/external/api/update?token=YOUR_AUTH_TOKEN&v2=1
 https://blynk.cloud/external/api/get?token=YOUR_AUTH_TOKEN&v3
 ```
 
-### Pre-Built Apple Shortcuts
+### Pre-Built Apple Shortcuts - (Status Check)
 
 Below are the links to the shortcuts I use. You can simply add them to your device and update the tokens in the URL:
 
@@ -173,6 +175,22 @@ https://www.icloud.com/shortcuts/6711baafc62f4caf9015371f4de45f0c
 **Check Status (PC-Power-Status only):**
 ```
 https://www.icloud.com/shortcuts/46dbc0d17be64a94a4b15b8bdc532de0 
+```
+### Pre-Built Apple Shortcuts - (No Status Check)
+
+Below are the links to the shortcuts I use. You can simply add them to your device and update the tokens in the URL:
+
+**Boot:**
+```
+https://www.icloud.com/shortcuts/8ef6bb244874432cb8dd702c11e801bd
+```
+**Soft Shutdown**
+```
+https://www.icloud.com/shortcuts/7e59276f9a9c4c45b8bf1409fe380428
+```
+**Force Shutdown:**
+```
+https://www.icloud.com/shortcuts/9afd42adf2954ac0b38a13bf602db735
 ```
 
 ## Troubleshooting
